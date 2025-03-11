@@ -1,1 +1,6 @@
-@import 'tailwindcss'
+@import url("https://fonts.cdnfonts.com/css/pokemon-solid");
+@import "tailwindcss";
+
+.pokemon-font {
+	font-family: "Pokemon Solid", sans-serif;
+}
