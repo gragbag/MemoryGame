@@ -1,4 +1,4 @@
-export default function Header() {
+export default function Header({ score, bestScore }: HeaderProps) {
 	return (
 		<div className="flex justify-between mx-6">
 			{/* Title and Instructions */}
@@ -9,9 +9,14 @@ export default function Header() {
 
 			{/* Score */}
 			<div className="flex flex-col space-y-2">
-				<p>Score: 0</p>
-				<p>Best Score: 0</p>
+				<p>Score: {score}</p>
+				<p>Best Score: {bestScore}</p>
 			</div>
 		</div>
 	);
+}
+
+interface HeaderProps {
+	score: number;
+	bestScore: number;
 }

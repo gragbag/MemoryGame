@@ -1,6 +1,6 @@
-export default function Card({ name, sprite }: CardProps) {
+export default function Card({ name, sprite, onClick }: CardProps) {
 	return (
-		<div className="max-w-xl rounded-2xl bg-pink-300 flex flex-col items-center justify-center hover:cursor-pointer hover:shadow-lg hover:shadow-blue-500/75 hover:scale-105">
+		<div className="max-w-xl rounded-2xl bg-pink-300 flex flex-col items-center justify-center hover:cursor-pointer hover:shadow-lg hover:shadow-blue-500/75 hover:scale-105" onClick={onClick}>
 			{/* Image */}
 			<img src={sprite} alt={name} className="w-full h-64 object-cover" />
 
@@ -13,4 +13,5 @@ export default function Card({ name, sprite }: CardProps) {
 interface CardProps {
 	name: string;
 	sprite: string;
+	onClick: () => void;
 }

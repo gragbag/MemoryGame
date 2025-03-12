@@ -1,9 +1,12 @@
 import Card from "./Card";
+import Header from "./Header";
 import { useEffect, useState } from "react";
 
 export default function CardList() {
 	const [randomPokemon, setRandomPokemon] = useState<PokemonCard[]>([]);
 	const [score, setScore] = useState<number>(0);
+	const [bestScore, setBestScore] = useState<number>(0);
+	const [selected, setSelected] = useState<Set<string>>(new Set());
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -14,12 +17,34 @@ export default function CardList() {
 		fetchData();
 	}, [score]);
 
+	const updateScore = (name: string) => {
+		if (selected.has(name)) {
+			setScore(0);
+			setSelected(new Set());
+			return;
+		}
+
+		setScore((prevScore: number) => prevScore + 1);
+		if (score + 1 > bestScore) {
+			setBestScore(score + 1);
+		}
+
+		setSelected((prevSet) => {
+			const newSet = new Set(prevSet);
+			newSet.add(name);
+			return newSet;
+		});
+	};
+
 	return (
-		<div className="flex flex-wrap gap-12 mt-12 mx-12 justify-center">
-			{randomPokemon.map((pokemon, index) => (
-				<Card key={index} name={pokemon.name} sprite={pokemon.sprite} />
-			))}
-		</div>
+		<>
+			<Header score={score} bestScore={bestScore} />
+			<div className="flex flex-wrap gap-12 mt-12 mx-12 justify-center">
+				{randomPokemon.map((pokemon, index) => (
+					<Card key={index} name={pokemon.name} sprite={pokemon.sprite} onClick={() => updateScore(pokemon.name)} />
+				))}
+			</div>
+		</>
 	);
 }
 
@@ -28,7 +53,7 @@ const fetchRandomPokemon = async (): Promise<PokemonCard[]> => {
 	const data = await response.json();
 	const pokemonList: Pokemon[] = data.results;
 
-	const randomIndices: number[] = getRandomList(151);
+	const randomIndices: number[] = getRandomList(pokemonList.length);
 	const randomPokemon: PokemonCard[] = [];
 
 	for (let i = 0; i < randomIndices.length; i++) {
