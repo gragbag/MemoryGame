@@ -9,10 +9,16 @@ export default function CardList() {
 	const [selected, setSelected] = useState<Set<string>>(new Set());
 	const [incorrect, setIncorrect] = useState<boolean>(false);
 
+	const [loading, setLoading] = useState<boolean>(true);
+
 	useEffect(() => {
 		const fetchData = async () => {
+			setLoading(true);
+
 			const pokemonData: PokemonCard[] = await fetchRandomPokemon(selected);
 			setRandomPokemon(pokemonData);
+
+			setLoading(false);
 		};
 
 		fetchData();
@@ -45,7 +51,7 @@ export default function CardList() {
 			<Header score={score} bestScore={bestScore} incorrect={incorrect} />
 			<div className="flex flex-wrap gap-12 mt-12 mx-12 justify-center">
 				{randomPokemon.map((pokemon, index) => (
-					<Card key={index} name={pokemon.name} sprite={pokemon.sprite} onClick={() => updateScore(pokemon.name)} />
+					<Card key={index} name={pokemon.name} sprite={pokemon.sprite} onClick={() => updateScore(pokemon.name)} disabled={loading} />
 				))}
 			</div>
 		</>
