@@ -7,6 +7,7 @@ export default function CardList() {
 	const [score, setScore] = useState<number>(0);
 	const [bestScore, setBestScore] = useState<number>(0);
 	const [selected, setSelected] = useState<Set<string>>(new Set());
+	const [incorrect, setIncorrect] = useState<boolean>(false);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -21,6 +22,7 @@ export default function CardList() {
 		if (selected.has(name)) {
 			setScore(0);
 			setSelected(new Set());
+			setIncorrect(true);
 			return;
 		}
 
@@ -34,11 +36,13 @@ export default function CardList() {
 			newSet.add(name);
 			return newSet;
 		});
+
+		setIncorrect(false);
 	};
 
 	return (
 		<>
-			<Header score={score} bestScore={bestScore} />
+			<Header score={score} bestScore={bestScore} incorrect={incorrect} />
 			<div className="flex flex-wrap gap-12 mt-12 mx-12 justify-center">
 				{randomPokemon.map((pokemon, index) => (
 					<Card key={index} name={pokemon.name} sprite={pokemon.sprite} onClick={() => updateScore(pokemon.name)} />
