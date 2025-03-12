@@ -11,7 +11,7 @@ export default function CardList() {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const pokemonData: PokemonCard[] = await fetchRandomPokemon();
+			const pokemonData: PokemonCard[] = await fetchRandomPokemon(selected);
 			setRandomPokemon(pokemonData);
 		};
 
@@ -52,7 +52,7 @@ export default function CardList() {
 	);
 }
 
-const fetchRandomPokemon = async (): Promise<PokemonCard[]> => {
+const fetchRandomPokemon = async (alreadySelected: Set<string>): Promise<PokemonCard[]> => {
 	const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151&offset=0");
 	const data = await response.json();
 	const pokemonList: Pokemon[] = data.results;
@@ -60,6 +60,7 @@ const fetchRandomPokemon = async (): Promise<PokemonCard[]> => {
 	const randomIndices: number[] = getRandomList(pokemonList.length);
 	const randomPokemon: PokemonCard[] = [];
 
+	let newPokemonCount: number = 0;
 	for (let i = 0; i < randomIndices.length; i++) {
 		const pokemon = pokemonList[randomIndices[i]];
 		const name: string = pokemon.name;
@@ -68,7 +69,27 @@ const fetchRandomPokemon = async (): Promise<PokemonCard[]> => {
 		const pokemonData = await pokemonResponse.json();
 		const sprite: string = pokemonData.sprites.front_default;
 
+		if (!alreadySelected.has(name)) {
+			newPokemonCount++;
+		}
+
 		randomPokemon.push({ name, sprite });
+	}
+
+	if (newPokemonCount == 0) {
+		let replacementIndex = 0;
+		while (replacementIndex < pokemonList.length && alreadySelected.has(pokemonList[replacementIndex].name)) {
+			replacementIndex++;
+		}
+
+		const pokemon = pokemonList[replacementIndex];
+		const name: string = pokemon.name;
+
+		const pokemonResponse = await fetch(pokemon.url);
+		const pokemonData = await pokemonResponse.json();
+		const sprite: string = pokemonData.sprites.front_default;
+
+		randomPokemon[Math.floor(Math.random() * randomPokemon.length)] = { name, sprite };
 	}
 
 	return randomPokemon;
