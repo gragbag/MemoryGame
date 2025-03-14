@@ -72,13 +72,19 @@ const fetchPokemonData = async () => {
 	const pokemonList: Pokemon[] = data.results;
 
 	const pokemonCardList: PokemonCard[] = [];
+
+	const pokemonData = await Promise.all(
+		pokemonList.map(async (pokemon) => {
+			const response = await fetch(pokemon.url);
+			return response.json();
+		})
+	);
+
 	for (let i = 0; i < pokemonList.length; i++) {
 		const pokemon = pokemonList[i];
 		const name: string = pokemon.name;
 
-		const pokemonResponse = await fetch(pokemon.url);
-		const pokemonData = await pokemonResponse.json();
-		const sprite: string = pokemonData.sprites.front_default;
+		const sprite: string = pokemonData[i].sprites.front_default;
 
 		pokemonCardList.push({ name, sprite });
 	}
