@@ -3,6 +3,7 @@ import Header from "./Header";
 import { useEffect, useState } from "react";
 
 export default function CardList() {
+	const [pokemonList, setPokemonList] = useState<PokemonCard[]>([]);
 	const [randomPokemon, setRandomPokemon] = useState<PokemonCard[]>([]);
 	const [score, setScore] = useState<number>(0);
 	const [bestScore, setBestScore] = useState<number>(0);
@@ -13,10 +14,13 @@ export default function CardList() {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			setLoading(true);
-
-			const pokemonData: PokemonCard[] = await fetchRandomPokemon(selected);
-			setRandomPokemon(pokemonData);
+			if (pokemonList.length == 0) {
+				const pokemonData = await fetchPokemonData();
+				setPokemonList(pokemonData);
+				setRandomPokemon(fetchRandomPokemon(pokemonData, selected));
+			} else {
+				setRandomPokemon(fetchRandomPokemon(pokemonList, selected));
+			}
 
 			setLoading(false);
 		};
@@ -46,6 +50,10 @@ export default function CardList() {
 		setIncorrect(false);
 	};
 
+	if (loading) {
+		return <h2 className="text-center text-4xl text-blue-500 pt-50">Loading...</h2>;
+	}
+
 	return (
 		<>
 			<Header score={score} bestScore={bestScore} incorrect={incorrect} />
@@ -58,11 +66,27 @@ export default function CardList() {
 	);
 }
 
-const fetchRandomPokemon = async (alreadySelected: Set<string>): Promise<PokemonCard[]> => {
+const fetchPokemonData = async () => {
 	const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151&offset=0");
 	const data = await response.json();
 	const pokemonList: Pokemon[] = data.results;
 
+	const pokemonCardList: PokemonCard[] = [];
+	for (let i = 0; i < pokemonList.length; i++) {
+		const pokemon = pokemonList[i];
+		const name: string = pokemon.name;
+
+		const pokemonResponse = await fetch(pokemon.url);
+		const pokemonData = await pokemonResponse.json();
+		const sprite: string = pokemonData.sprites.front_default;
+
+		pokemonCardList.push({ name, sprite });
+	}
+
+	return pokemonCardList;
+};
+
+const fetchRandomPokemon = (pokemonList: PokemonCard[], alreadySelected: Set<string>): PokemonCard[] => {
 	const randomIndices: number[] = getRandomList(pokemonList.length);
 	const randomPokemon: PokemonCard[] = [];
 
@@ -70,10 +94,7 @@ const fetchRandomPokemon = async (alreadySelected: Set<string>): Promise<Pokemon
 	for (let i = 0; i < randomIndices.length; i++) {
 		const pokemon = pokemonList[randomIndices[i]];
 		const name: string = pokemon.name;
-
-		const pokemonResponse = await fetch(pokemon.url);
-		const pokemonData = await pokemonResponse.json();
-		const sprite: string = pokemonData.sprites.front_default;
+		const sprite: string = pokemon.sprite;
 
 		if (!alreadySelected.has(name)) {
 			newPokemonCount++;
@@ -85,17 +106,14 @@ const fetchRandomPokemon = async (alreadySelected: Set<string>): Promise<Pokemon
 	if (newPokemonCount == 0) {
 		let replacementIndex = 0;
 		while (replacementIndex < pokemonList.length && alreadySelected.has(pokemonList[replacementIndex].name)) {
-			replacementIndex++;
+			replacementIndex++; //Select the first new pokemon in the list
 		}
 
 		const pokemon = pokemonList[replacementIndex];
 		const name: string = pokemon.name;
+		const sprite: string = pokemon.sprite;
 
-		const pokemonResponse = await fetch(pokemon.url);
-		const pokemonData = await pokemonResponse.json();
-		const sprite: string = pokemonData.sprites.front_default;
-
-		randomPokemon[Math.floor(Math.random() * randomPokemon.length)] = { name, sprite };
+		randomPokemon[Math.floor(Math.random() * randomPokemon.length)] = { name, sprite }; //Replace a random index with the new pokemon
 	}
 
 	return randomPokemon;
